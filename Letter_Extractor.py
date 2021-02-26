@@ -23,7 +23,7 @@ root = Tk()
 canvas = Canvas(root, width = 950, height = 800)      
 canvas.pack()
 tkimg = ImageTk.PhotoImage(img)
-canvas.create_image(10,10, anchor=NW, image=tkimg)
+canvas.create_image(0,0, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
 
 # Determine the origin by clicking
 def firstcorner(eventorigin):
@@ -31,6 +31,7 @@ def firstcorner(eventorigin):
     x0 = eventorigin.x
     y0 = eventorigin.y
     print(x0,y0)
+    first_marker = canvas.create_oval(x0, y0, x0+2, y0+2)
     root.bind("<Button 1>",secondcorner)
 
 # Determine the origin by clicking
@@ -39,11 +40,12 @@ def secondcorner(eventorigin):
     x1 = eventorigin.x
     y1 = eventorigin.y
     print("second", x1,y1)
-    cutimage()
-    #
+    selection_box = canvas.create_rectangle(x0, y0, x1, y1,fill='')
+    #cutimage()
+    root.bind("<Button 1>",cutimage)
 
 #Cuts the selected section of the image
-def cutimage():
+def cutimage(eventorigin): #remove eventorigin if you want to call the funct directly
     if(x0 < x1):
         left = x0
         right = x1
@@ -59,7 +61,7 @@ def cutimage():
         lower = y0
 
         
-    section = img.crop((left, upper, right, lower))
+    section = img.crop((left, upper, right, lower)) #Should add something for if they click outside the image but inside the window
     section.show()
 
     root.bind("<Button 1>",firstcorner)
