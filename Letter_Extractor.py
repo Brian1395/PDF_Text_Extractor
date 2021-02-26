@@ -26,26 +26,26 @@ tkimg = ImageTk.PhotoImage(img)
 canvas.create_image(0,0, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
 
 # Determine the origin by clicking
-def firstcorner(eventorigin):
-    global x0,y0
+def first_corner(eventorigin):
+    global x0,y0, first_marker
     x0 = eventorigin.x
     y0 = eventorigin.y
     print(x0,y0)
     first_marker = canvas.create_oval(x0, y0, x0+2, y0+2)
-    root.bind("<Button 1>",secondcorner)
+    root.bind("<Button 1>",second_corner)
 
 # Determine the origin by clicking
-def secondcorner(eventorigin):
-    global x1,y1
+def second_corner(eventorigin):
+    global x1,y1,selection_box
     x1 = eventorigin.x
     y1 = eventorigin.y
     print("second", x1,y1)
     selection_box = canvas.create_rectangle(x0, y0, x1, y1,fill='')
     #cutimage()
-    root.bind("<Button 1>",cutimage)
+    root.bind("<Button 1>",cut_image)
 
 #Cuts the selected section of the image
-def cutimage(eventorigin): #remove eventorigin if you want to call the funct directly
+def cut_image(eventorigin): #remove eventorigin if you want to call the funct directly
     if(x0 < x1):
         left = x0
         right = x1
@@ -64,9 +64,18 @@ def cutimage(eventorigin): #remove eventorigin if you want to call the funct dir
     section = img.crop((left, upper, right, lower)) #Should add something for if they click outside the image but inside the window
     section.show()
 
-    root.bind("<Button 1>",firstcorner)
-    
+    root.bind("<Button 1>",first_corner)
+
+def clear_selection(eventorigin):
+    try:
+        canvas.delete(first_marker)
+        canvas.delete(selection_box)
+    except:
+        print("Nothing to clear")
+    root.bind("<Button 1>",first_corner)
+
 #mouseclick event
-root.bind("<Button 1>",firstcorner)
+root.bind("<Button 1>",first_corner)
+root.bind("q",clear_selection)
 
 root.mainloop() 
