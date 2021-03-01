@@ -23,7 +23,7 @@ root = Tk()
 canvas = Canvas(root, width = 950, height = 800)      
 canvas.pack()
 tkimg = ImageTk.PhotoImage(img)
-canvas.create_image(0,0, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
+canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
 
 # Determine the origin by clicking
 def first_corner(eventorigin):
@@ -74,8 +74,33 @@ def clear_selection(eventorigin):
         print("Nothing to clear")
     root.bind("<Button 1>",first_corner)
 
-#mouseclick event
+def zoom_in(eventorigin):
+    global tkimg, canv_img
+    x_click = eventorigin.x
+    y_click = eventorigin.y
+    x_offset = int(canvas['width'])/2 - x_click*2
+    y_offset = int(canvas['height'])/2 - y_click*2
+    print("called", x_click, y_click)
+    zoom_img = img.resize((int(img.width*2),int(img.height*2)))
+    tkimg = ImageTk.PhotoImage(zoom_img)
+    canvas.delete(canv_img)
+    canv_img = canvas.create_image(x_offset,y_offset, anchor=NW, image=tkimg)
+    #canvas.create_rectangle(0, 0, 100, 100,fill='')
+    #
+    #canvas.itemconfig(canv_img, image = tk_img)
+    #canvas.move(canv_img, -100, -200)
+    root.bind("<Button 3>",zoom_out)
+
+def zoom_out(eventorigin):
+    global tkimg, canv_img
+    tkimg = ImageTk.PhotoImage(img)
+    canvas.delete(canv_img)
+    canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg)
+    root.bind("<Button 3>",zoom_in)
+
+#mouseclick events
 root.bind("<Button 1>",first_corner)
+root.bind("<Button 3>",zoom_in)
 root.bind("q",clear_selection)
 
 root.mainloop() 
