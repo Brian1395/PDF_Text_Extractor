@@ -16,6 +16,8 @@ images = convert_from_path('Source.pdf',poppler_path = r"C:\Users\brian\Document
 
 img = images[1]
 img = img.resize((int(img.width/2),int(img.height/2)))
+zoom_img = None
+zoom = False
 #img.show()
 
 ## Creates a Tkinter instance where you can choose the corners of the letter
@@ -41,7 +43,6 @@ def second_corner(eventorigin):
     y1 = eventorigin.y
     print("second", x1,y1)
     selection_box = canvas.create_rectangle(x0, y0, x1, y1,fill='')
-    #cutimage()
     root.bind("<Button 1>",cut_image)
 
 #Cuts the selected section of the image
@@ -61,12 +62,15 @@ def cut_image(eventorigin): #remove eventorigin if you want to call the funct di
         lower = y0
 
         
-    section = img.crop((left, upper, right, lower)) #Should add something for if they click outside the image but inside the window
+    if zoom:
+        section = zoom_img.crop((left, upper, right, lower))
+    else:
+        section = img.crop((left, upper, right, lower)) #Should add something for if they click outside the image but inside the window
     section.show()
 
     root.bind("<Button 1>",first_corner)
 
-def clear_selection(eventorigin):
+def clear_selection(eventorigin = None):
     try:
         canvas.delete(first_marker)
         canvas.delete(selection_box)
@@ -75,28 +79,29 @@ def clear_selection(eventorigin):
     root.bind("<Button 1>",first_corner)
 
 def zoom_in(eventorigin):
-    global tkimg, canv_img
+    global tkimg, canv_img, zoom, zoom_img
     x_click = eventorigin.x
     y_click = eventorigin.y
     x_offset = int(canvas['width'])/2 - x_click*2
     y_offset = int(canvas['height'])/2 - y_click*2
     print("called", x_click, y_click)
     zoom_img = img.resize((int(img.width*2),int(img.height*2)))
+    zoom_img = zoom_img.crop((-x_offset, -y_offset, -x_offset + img.width, -y_offset + img.height))
     tkimg = ImageTk.PhotoImage(zoom_img)
     canvas.delete(canv_img)
-    canv_img = canvas.create_image(x_offset,y_offset, anchor=NW, image=tkimg)
-    #canvas.create_rectangle(0, 0, 100, 100,fill='')
-    #
-    #canvas.itemconfig(canv_img, image = tk_img)
-    #canvas.move(canv_img, -100, -200)
+    canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg)
     root.bind("<Button 3>",zoom_out)
+    zoom = True
+    clear_selection()
 
 def zoom_out(eventorigin):
-    global tkimg, canv_img
+    global tkimg, canv_img, zoom
     tkimg = ImageTk.PhotoImage(img)
     canvas.delete(canv_img)
     canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg)
     root.bind("<Button 3>",zoom_in)
+    zoom = False
+    clear_selection()
 
 #mouseclick events
 root.bind("<Button 1>",first_corner)
