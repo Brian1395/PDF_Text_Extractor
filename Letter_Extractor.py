@@ -18,14 +18,35 @@ img = images[1]
 img = img.resize((int(img.width/2),int(img.height/2)))
 zoom_img = None
 zoom = False
+letter = ''
+top_gap = 50
+letter_written = None
 #img.show()
+
+## Display current letter to collect training data on
+def inc_letter(eventorigin = None):
+    global letter, letter_written
+    if(letter == ''):
+        letter = 'A'
+    elif(letter == 'Z'):
+        letter = 'a'
+    elif(letter == 'z'):
+        print("DONE!!!")
+        #TODO: DEFINE FINISHING PROG
+    else:
+        letter = chr(ord(letter)+1)
+    canvas.delete(letter_written)
+    letter_written = canvas.create_text(int(canvas['width'])/2,top_gap/2,fill="darkblue",font="Times 20 bold",text=letter)
+    canvas.update
+
 
 ## Creates a Tkinter instance where you can choose the corners of the letter
 root = Tk()      
 canvas = Canvas(root, width = 950, height = 800)      
 canvas.pack()
 tkimg = ImageTk.PhotoImage(img)
-canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
+canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
+inc_letter()
 
 # Determine the origin by clicking
 def first_corner(eventorigin):
@@ -63,9 +84,9 @@ def cut_image(eventorigin): #remove eventorigin if you want to call the funct di
 
         
     if zoom:
-        section = zoom_img.crop((left, upper, right, lower))
+        section = zoom_img.crop((left, upper - top_gap, right, lower - top_gap))
     else:
-        section = img.crop((left, upper, right, lower)) #Should add something for if they click outside the image but inside the window
+        section = img.crop((left, upper - top_gap, right, lower - top_gap)) #Should add something for if they click outside the image but inside the window
     section.show()
 
     root.bind("<Button 1>",first_corner)
@@ -89,7 +110,7 @@ def zoom_in(eventorigin):
     zoom_img = zoom_img.crop((-x_offset, -y_offset, -x_offset + img.width, -y_offset + img.height))
     tkimg = ImageTk.PhotoImage(zoom_img)
     canvas.delete(canv_img)
-    canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg)
+    canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg)
     root.bind("<Button 3>",zoom_out)
     zoom = True
     clear_selection()
@@ -98,7 +119,7 @@ def zoom_out(eventorigin):
     global tkimg, canv_img, zoom
     tkimg = ImageTk.PhotoImage(img)
     canvas.delete(canv_img)
-    canv_img = canvas.create_image(0,0, anchor=NW, image=tkimg)
+    canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg)
     root.bind("<Button 3>",zoom_in)
     zoom = False
     clear_selection()
@@ -107,5 +128,6 @@ def zoom_out(eventorigin):
 root.bind("<Button 1>",first_corner)
 root.bind("<Button 3>",zoom_in)
 root.bind("q",clear_selection)
+root.bind("n",inc_letter)
 
 root.mainloop() 
