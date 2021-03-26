@@ -8,7 +8,16 @@ from pdf2image.exceptions import (
     PDFSyntaxError
 )
 from PIL import Image, ImageTk
-from tkinter import *  
+from tkinter import *
+import os
+from os import listdir
+from os.path import isfile, join
+
+## Gets files in the training data folder so names don't overlap
+path_to_training_data = "C:\\Users\\brian\\Documents\\GitHub\\PDF_Text_Extractor\\TrainingData"
+#os.chdir(path_to_training_data)
+#only_files = [f for f in listdir(path_to_training_data) if isfile(join(path_to_training_data, f))]
+#print(only_files)
 
 ## Turns PDF into image to display
 images = convert_from_path('Source.pdf',poppler_path = r"C:\Users\brian\Documents\GitHub\PDF_Text_Extractor\poppler-21.02.0\Library\bin", first_page=1, last_page=2, fmt='JPEG')
@@ -87,9 +96,18 @@ def cut_image(eventorigin): #remove eventorigin if you want to call the funct di
         section = zoom_img.crop((left, upper - top_gap, right, lower - top_gap))
     else:
         section = img.crop((left, upper - top_gap, right, lower - top_gap)) #Should add something for if they click outside the image but inside the window
-    section.show()
+    #section.show()
+    cur_num = 0
+    only_files = [f for f in listdir(path_to_training_data) if isfile(join(path_to_training_data, f))] #Doing all this every time is wildly inefficient, but makes sure you don't overwrite anything
+    for x in only_files: 
+        if(x[0] == letter and int(x[1:x.index('.')]) == cur_num):
+            print(int(x[1:x.index('.')]))
+            cur_num = int(x[1:x.index('.')]) + 1
+    name = letter + str(cur_num)
+    section.save(path_to_training_data + "\\" + name + ".jpg")
 
     root.bind("<Button 1>",first_corner)
+    clear_selection()
 
 def clear_selection(eventorigin = None):
     try:
