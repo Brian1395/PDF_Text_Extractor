@@ -15,22 +15,23 @@ from os.path import isfile, join
 
 ## Gets files in the training data folder so names don't overlap
 path_to_training_data = "C:\\Users\\brian\\Documents\\GitHub\\PDF_Text_Extractor\\TrainingData"
-#os.chdir(path_to_training_data)
-#only_files = [f for f in listdir(path_to_training_data) if isfile(join(path_to_training_data, f))]
-#print(only_files)
 
-## Turns PDF into image to display
-images = convert_from_path('Source.pdf',poppler_path = r"C:\Users\brian\Documents\GitHub\PDF_Text_Extractor\poppler-21.02.0\Library\bin", first_page=1, last_page=2, fmt='JPEG')
-#images = convert_from_bytes(open('Source.pdf', 'rb').read())
-
-img = images[1]
-img = img.resize((int(img.width/2),int(img.height/2)))
 zoom_img = None
 zoom = False
 letter = ''
 top_gap = 50
 letter_written = None
-#img.show()
+cur_page = 1
+
+## Turns PDF into image to display
+images = convert_from_path('Source.pdf',poppler_path = r"C:\Users\brian\Documents\GitHub\PDF_Text_Extractor\poppler-21.02.0\Library\bin", first_page=1, last_page=2, fmt='JPEG')
+
+img = images[1]
+img = img.resize((int(img.width/2),int(img.height/2)))
+
+
+
+
 
 ## Display current letter to collect training data on
 def inc_letter(eventorigin = None):
@@ -54,15 +55,15 @@ root = Tk()
 canvas = Canvas(root, width = 950, height = 800)      
 canvas.pack()
 tkimg = ImageTk.PhotoImage(img)
-canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg) #if you want to edit the image offset you need to add something later when you crop the image. 
+canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg) 
 inc_letter()
+
 
 # Determine the origin by clicking
 def first_corner(eventorigin):
     global x0,y0, first_marker
     x0 = eventorigin.x
     y0 = eventorigin.y
-    print(x0,y0)
     first_marker = canvas.create_oval(x0, y0, x0+2, y0+2)
     root.bind("<Button 1>",second_corner)
 
@@ -71,7 +72,6 @@ def second_corner(eventorigin):
     global x1,y1,selection_box
     x1 = eventorigin.x
     y1 = eventorigin.y
-    print("second", x1,y1)
     selection_box = canvas.create_rectangle(x0, y0, x1, y1,fill='')
     root.bind("<Button 1>",cut_image)
 
@@ -101,13 +101,14 @@ def cut_image(eventorigin): #remove eventorigin if you want to call the funct di
     only_files = [f for f in listdir(path_to_training_data) if isfile(join(path_to_training_data, f))] #Doing all this every time is wildly inefficient, but makes sure you don't overwrite anything
     for x in only_files: 
         if(x[0] == letter and int(x[1:x.index('.')]) == cur_num):
-            print(int(x[1:x.index('.')]))
             cur_num = int(x[1:x.index('.')]) + 1
     name = letter + str(cur_num)
     section.save(path_to_training_data + "\\" + name + ".jpg")
 
     root.bind("<Button 1>",first_corner)
     clear_selection()
+
+
 
 def clear_selection(eventorigin = None):
     try:
@@ -116,6 +117,8 @@ def clear_selection(eventorigin = None):
     except:
         print("Nothing to clear")
     root.bind("<Button 1>",first_corner)
+
+
 
 def zoom_in(eventorigin):
     global tkimg, canv_img, zoom, zoom_img
@@ -142,10 +145,27 @@ def zoom_out(eventorigin):
     zoom = False
     clear_selection()
 
+
+
+##Switch to the next page
+def turn_page(eventorigin):
+    global cur_page, canv_img, img, letter, tkimg
+    cur_page = cur_page + 1
+    images = convert_from_path('Source.pdf',poppler_path = r"C:\Users\brian\Documents\GitHub\PDF_Text_Extractor\poppler-21.02.0\Library\bin", first_page=cur_page, last_page=cur_page+1, fmt='JPEG')
+    img = images[1]
+    img = img.resize((int(img.width/2),int(img.height/2)))
+    tkimg = ImageTk.PhotoImage(img)
+    canvas.delete(canv_img)
+    canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg) 
+    letter = 'A'
+
+
+
 #mouseclick events
 root.bind("<Button 1>",first_corner)
 root.bind("<Button 3>",zoom_in)
 root.bind("q",clear_selection)
 root.bind("n",inc_letter)
+root.bind("p",turn_page)
 
 root.mainloop() 
