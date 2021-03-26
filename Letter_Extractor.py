@@ -51,7 +51,9 @@ def inc_letter(eventorigin = None):
 
 
 ## Creates a Tkinter instance where you can choose the corners of the letter
-root = Tk()      
+root = Tk()
+zoom_scale = Scale(root, from_=2, to=4, tickinterval=0.5)
+zoom_scale.pack(side = LEFT)
 canvas = Canvas(root, width = 950, height = 800)      
 canvas.pack()
 tkimg = ImageTk.PhotoImage(img)
@@ -64,7 +66,10 @@ def first_corner(eventorigin):
     global x0,y0, first_marker
     x0 = eventorigin.x
     y0 = eventorigin.y
-    first_marker = canvas.create_oval(x0, y0, x0+2, y0+2)
+    if(y0<top_gap):
+        print("Cannot select within this area")
+        return
+    first_marker = canvas.create_oval(x0-1, y0-1, x0+1, y0+1)
     root.bind("<Button 1>",second_corner)
 
 # Determine the origin by clicking
@@ -72,6 +77,9 @@ def second_corner(eventorigin):
     global x1,y1,selection_box
     x1 = eventorigin.x
     y1 = eventorigin.y
+    if(y1<top_gap):
+        print("Cannot select within this area")
+        return
     selection_box = canvas.create_rectangle(x0, y0, x1, y1,fill='')
     root.bind("<Button 1>",cut_image)
 
@@ -122,12 +130,13 @@ def clear_selection(eventorigin = None):
 
 def zoom_in(eventorigin):
     global tkimg, canv_img, zoom, zoom_img
+    scale = zoom_scale.get()
     x_click = eventorigin.x
     y_click = eventorigin.y
-    x_offset = int(canvas['width'])/2 - x_click*2
-    y_offset = int(canvas['height'])/2 - y_click*2
+    x_offset = int(canvas['width'])/scale - x_click*scale
+    y_offset = int(canvas['height'])/scale - y_click*scale
     print("called", x_click, y_click)
-    zoom_img = img.resize((int(img.width*2),int(img.height*2)))
+    zoom_img = img.resize((int(img.width*scale),int(img.height*scale)))
     zoom_img = zoom_img.crop((-x_offset, -y_offset, -x_offset + img.width, -y_offset + img.height))
     tkimg = ImageTk.PhotoImage(zoom_img)
     canvas.delete(canv_img)
