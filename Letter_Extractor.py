@@ -110,13 +110,19 @@ def cut_image(eventorigin): #remove eventorigin if you want to call the funct di
         section = zoom_img.crop((left, upper - top_gap, right, lower - top_gap))
     else:
         section = img.crop((left, upper - top_gap, right, lower - top_gap)) #Should add something for if they click outside the image but inside the window
-    #section.show()
     cur_num = 0
     only_files = [f for f in listdir(path_to_training_data) if isfile(join(path_to_training_data, f))] #Doing all this every time is wildly inefficient, but makes sure you don't overwrite anything
-    for x in only_files: 
-        if(x[0] == letter and int(x[1:x.index('.')]) == cur_num):
+    for x in only_files:
+        if(x[0] == letter and x[1:x.index('.')] == str(cur_num)):
             cur_num = int(x[1:x.index('.')]) + 1
-    name = letter + str(cur_num)
+        elif(x[0:2] == str('_' + letter) and x[2:x.index('.')] == str(cur_num)):
+            cur_num = int(x[2:x.index('.')]) + 1
+
+    if(ord(letter) >= 97):
+        name = '_' + letter + str(cur_num)
+    else:
+        name = letter + str(cur_num)
+    
     section.save(path_to_training_data + "\\" + name + ".jpg")
 
     root.bind("<Button 1>",first_corner)
@@ -177,7 +183,8 @@ def turn_page(eventorigin):
     tkimg = ImageTk.PhotoImage(img)
     canvas.delete(canv_img)
     canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg) 
-    letter = 'A'
+    letter = ''
+    inc_letter()
 
 
 
