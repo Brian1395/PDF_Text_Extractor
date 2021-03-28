@@ -1,6 +1,8 @@
 # The end goal is for it to show you a letter and you select some examples of it on the page.
 # Then those are added to a folder with other training material for the eventual neural net
 
+#TODO: Zoom, Letter change between pages, z ending
+
 from pdf2image import convert_from_path, convert_from_bytes
 from pdf2image.exceptions import (
     PDFInfoNotInstalledError,
@@ -13,7 +15,7 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-## Gets files in the training data folder so names don't overlap
+
 path_to_training_data = "C:\\Users\\brian\\Documents\\GitHub\\PDF_Text_Extractor\\TrainingData"
 
 zoom_img = None
@@ -64,6 +66,8 @@ inc_letter()
 # Determine the origin by clicking
 def first_corner(eventorigin):
     global x0,y0, first_marker
+    if(eventorigin.widget != canvas):
+            return
     x0 = eventorigin.x
     y0 = eventorigin.y
     if(y0<top_gap):
@@ -75,6 +79,8 @@ def first_corner(eventorigin):
 # Determine the origin by clicking
 def second_corner(eventorigin):
     global x1,y1,selection_box
+    if(eventorigin.widget != canvas):
+            return
     x1 = eventorigin.x
     y1 = eventorigin.y
     if(y1<top_gap):
@@ -131,16 +137,21 @@ def clear_selection(eventorigin = None):
 def zoom_in(eventorigin):
     global tkimg, canv_img, zoom, zoom_img
     scale = zoom_scale.get()
+    if(eventorigin.widget != canvas):
+            return
+
+    print(int(canvas['width'])/2,int(canvas['height'])/2)
     x_click = eventorigin.x
     y_click = eventorigin.y
-    x_offset = int(canvas['width'])/scale - x_click*scale
-    y_offset = int(canvas['height'])/scale - y_click*scale
-    print("called", x_click, y_click)
+    x_offset = (x_click * scale) - int(canvas['width'])/2
+    y_offset = (y_click * scale) - int(canvas['height'])/2 
     zoom_img = img.resize((int(img.width*scale),int(img.height*scale)))
-    zoom_img = zoom_img.crop((-x_offset, -y_offset, -x_offset + img.width, -y_offset + img.height))
+    zoom_img = zoom_img.crop((x_offset, y_offset, x_offset + img.width, y_offset + img.height))
     tkimg = ImageTk.PhotoImage(zoom_img)
     canvas.delete(canv_img)
     canv_img = canvas.create_image(0,top_gap, anchor=NW, image=tkimg)
+    
+   
     root.bind("<Button 3>",zoom_out)
     zoom = True
     clear_selection()
