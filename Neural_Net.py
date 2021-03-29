@@ -2,7 +2,6 @@ import numpy as np
 import PIL
 from ImageStandardizer import ImageStandardizer
 
-path_to_training_data = "C:\\Users\\brian\\Documents\\GitHub\\PDF_Text_Extractor\\TrainingData\\A0.jpg"
 
 
 #   DONE - Make image sizes consistent
