@@ -127,20 +127,28 @@ def classify_plus(input_array, net): #Same as classify() but returns the layer a
 def train_one(training_array, classification, net):
     layer_activations, pre_sigmoids = classify_plus(training_array, net)
     prediction = layer_activations[-1]
-    goal = np.array([0,1])#gen_goal(classification)
+    goal = np.array([1,0])#gen_goal(classification)
     
     cost = calc_cost(prediction, goal)
-    print(prediction, '\n', goal)
+    print("Prediction: ", prediction, '\n', "Goal: ", goal, "\nPrev Layer: ", layer_activations[-2], "\n\n")
     #print(layer_activations)
 
     weight_ders = []
-    
+    bias_ders = []
+
     for i in range(len(layer_activations[-1])):
         x = layer_activations[-1][i]
-        weight_der = 2 * pre_sigmoids[-2] * (layer_activations[-2] * (1 - layer_activations[-2])) * (x - goal[i])
-
-        print(weight_der)
+        weight_der = 2 * layer_activations[-2] * (pre_sigmoids[-2] * (1 - pre_sigmoids[-2])) * (x - goal[i])
+        bias_der = 2 * (pre_sigmoids[-2] * (1 - pre_sigmoids[-2])) * (x - goal[i])
+        
+        print("Node " + str(i) + ":\n", weight_der, "\n", np.mean(bias_der))
         weight_ders.append(weight_der)
+        bias_ders.append(np.mean(bias_der))
+
+    #I don't think this is too useful, but it's very interesting to see that the averages are the same, regardless of if the goal is [1,0] or [0,1] for some reason
+    print("Averages:") 
+    print((weight_ders[0] + weight_ders[1])/len(weight_ders))
+    print((bias_ders[0] + bias_ders[1])/len(bias_ders))
 
     
 #img = ImageStandardizer().convert_from_file(path_to_training_data)
